@@ -1,6 +1,6 @@
 flask
 ultralytics
-easyocrwe 
+easyocr
 opencv-python-headless
 Pillow
 numpy
