@@ -259,7 +259,8 @@ header {
   grid-template-columns: 2fr 1fr;
   gap: 20px;
 }
-.dash-panel {
+.dash-panel,
+.upload-panel {
   padding: 24px;
 }
 .panel-header {
@@ -352,6 +353,25 @@ header {
   font-size: 14px;
 }
 
+.quick-action {
+  text-align: center;
+}
+.quick-action h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+.quick-action p {
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.camera-zone {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
 #image-preview {
   max-width: 100%;
   max-height: 400px;
@@ -553,6 +573,11 @@ header {
 }
 
 @media (max-width: 768px) {
+  /* Fix body layout so nav stays on top */
+  body {
+    flex-direction: column;
+  }
+
   /* Sidebar handling */
   .sidebar {
     width: 100%;

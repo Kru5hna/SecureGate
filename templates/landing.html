@@ -1,0 +1,294 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SecureGate - Vehicle Scanner Base</title>
+    <!-- Premium Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=Outfit:wght@300;400;500;600&display=swap"
+      rel="stylesheet"
+    />
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+    <style>
+      :root {
+        --bg-color: #05060f;
+        --card-bg: rgba(20, 25, 33, 0.7);
+        --text-primary: #f0f6fc;
+        --text-secondary: #8b949e;
+        --accent: #58a6ff;
+        --accent-hover: #1f6feb;
+        --glass-blur: blur(16px);
+      }
+
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        background-color: var(--bg-color);
+        color: var(--text-primary);
+        font-family: "Outfit", sans-serif;
+        min-height: 100vh;
+        overflow-x: hidden;
+        background-image: radial-gradient(
+          circle at 50% -20%,
+          rgba(88, 166, 255, 0.15) 0%,
+          rgba(5, 6, 15, 1) 60%
+        );
+      }
+
+      /* Navigation */
+      nav {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 24px 8%;
+        position: relative;
+        z-index: 10;
+      }
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-family: "Space Grotesk", sans-serif;
+        font-weight: 700;
+        font-size: 24px;
+        color: var(--accent);
+      }
+
+      /* Hero Section */
+      .hero {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+        min-height: 80vh;
+        padding: 0 5%;
+        position: relative;
+        z-index: 2;
+      }
+
+      .hero h1 {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: clamp(3rem, 6vw, 5rem);
+        font-weight: 700;
+        line-height: 1.1;
+        margin-bottom: 24px;
+        background: linear-gradient(180deg, #ffffff 0%, #aab2bd 100%);
+        -webkit-background-clip: text;
+        background-clip: text;
+        -webkit-text-fill-color: transparent;
+      }
+
+      .hero p {
+        font-size: clamp(1.1rem, 2vw, 1.3rem);
+        color: var(--text-secondary);
+        max-width: 600px;
+        margin-bottom: 48px;
+        line-height: 1.6;
+      }
+
+      /* Action Buttons */
+      .btn {
+        display: inline-flex;
+        align-items: center;
+        gap: 12px;
+        padding: 16px 32px;
+        font-size: 1.1rem;
+        font-weight: 600;
+        border-radius: 50px;
+        text-decoration: none;
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        font-family: "Space Grotesk", sans-serif;
+      }
+
+      .btn-primary {
+        background: var(--accent);
+        color: #ffffff;
+        box-shadow: 0 0 20px rgba(88, 166, 255, 0.3);
+      }
+      .btn-primary:hover {
+        background: var(--accent-hover);
+        transform: translateY(-2px);
+        box-shadow: 0 0 30px rgba(88, 166, 255, 0.5);
+      }
+
+      .btn-outline {
+        background: transparent;
+        color: var(--text-primary);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+      }
+      .btn-outline:hover {
+        background: rgba(255, 255, 255, 0.05);
+        border-color: rgba(255, 255, 255, 0.4);
+      }
+
+      .action-group {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+
+      /* Features Grid */
+      .features {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 24px;
+        padding: 60px 8%;
+        max-width: 1400px;
+        margin: 0 auto;
+      }
+
+      .feature-card {
+        background: var(--card-bg);
+        border: 1px solid rgba(255, 255, 255, 0.05);
+        border-radius: 16px;
+        padding: 32px;
+        backdrop-filter: var(--glass-blur);
+        -webkit-backdrop-filter: var(--glass-blur);
+        transition: transform 0.3s;
+      }
+      .feature-card:hover {
+        transform: translateY(-5px);
+        border-color: rgba(255, 255, 255, 0.15);
+      }
+
+      .feature-icon {
+        width: 48px;
+        height: 48px;
+        background: rgba(88, 166, 255, 0.1);
+        color: var(--accent);
+        border-radius: 12px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        font-size: 20px;
+        margin-bottom: 24px;
+      }
+
+      .feature-card h3 {
+        font-family: "Space Grotesk", sans-serif;
+        font-size: 1.3rem;
+        margin-bottom: 12px;
+      }
+
+      .feature-card p {
+        color: var(--text-secondary);
+        font-size: 0.95rem;
+        line-height: 1.5;
+      }
+
+      /* Floating Animation */
+      @keyframes float {
+        0% {
+          transform: translateY(0px);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+        100% {
+          transform: translateY(0px);
+        }
+      }
+      .floating {
+        animation: float 4s ease-in-out infinite;
+      }
+
+      /* Mobile Adjustments */
+      @media (max-width: 768px) {
+        .action-group {
+          flex-direction: column;
+          width: 100%;
+          max-width: 300px;
+        }
+        .btn {
+          width: 100%;
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <div class="logo">
+        <i class="fa-solid fa-shield-halved"></i>
+        <span>SecureGate</span>
+      </div>
+    </nav>
+
+    <main class="hero">
+      <div class="floating" style="margin-bottom: 30px">
+        <i
+          class="fa-solid fa-crosshairs"
+          style="font-size: 3rem; color: var(--accent); opacity: 0.8"
+        ></i>
+      </div>
+      <h1>Intelligent Vehicle<br />Access Control.</h1>
+      <p>
+        Next-generation deep learning campus security. SecureGate uses YOLOv8
+        object detection and LLM-powered OCR to instantly flag unauthorized
+        vehicles at your premises.
+      </p>
+
+      <div class="action-group">
+        <a href="{{ url_for('dashboard') }}" class="btn btn-primary">
+          Launch Dashboard <i class="fa-solid fa-arrow-right"></i>
+        </a>
+        <a
+          href="https://github.com/Kru5hna/SecureGate"
+          target="_blank"
+          class="btn btn-outline"
+        >
+          <i class="fa-brands fa-github"></i> View Source
+        </a>
+      </div>
+    </main>
+
+    <section class="features">
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fa-solid fa-bolt"></i>
+        </div>
+        <h3>Real-time Scanning</h3>
+        <p>
+          Connect to live camera feeds or drag-and-drop secure photos to
+          instantly process vehicle plates with ultra-low latency.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fa-solid fa-microchip"></i>
+        </div>
+        <h3>Moonshot AI OCR</h3>
+        <p>
+          Context-aware Vision AI extracts license plate characters flawlessly,
+          ignoring background glare and dirt for maximum accuracy.
+        </p>
+      </div>
+
+      <div class="feature-card">
+        <div class="feature-icon">
+          <i class="fa-solid fa-users-viewfinder"></i>
+        </div>
+        <h3>Automated Flagging</h3>
+        <p>
+          Direct integration with access control databases immediately blocks
+          unregistered users and alerts security staff visually.
+        </p>
+      </div>
+    </section>
+  </body>
+</html>
