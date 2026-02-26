@@ -10,7 +10,10 @@
       rel="stylesheet"
     />
     <!-- Custom CSS -->
-    <link rel="stylesheet" href="/static/css/style.css" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/style.css') }}"
+    />
     <!-- FontAwesome -->
     <link
       rel="stylesheet"
@@ -42,7 +45,7 @@
           <span>Detection History</span>
         </li>
       </ul>
-      <div class="version">v1.0 - SecureGate </div>
+      <div class="version">v1.0 - SecureGate</div>
     </nav>
 
     <!-- Main Content Area -->
@@ -382,6 +385,6 @@
       </div>
     </div>
 
-    <script src="/static/js/app.js"></script>
+    <script src="{{ url_for('static', filename='js/app.js') }}"></script>
   </body>
 </html>
