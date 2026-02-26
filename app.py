@@ -36,7 +36,12 @@ db.init_db()
 # ─── Page Routes ────────────────────────────────────────────────────
 
 @app.route("/")
-def index():
+def landing():
+    """Serve the introductory landing page."""
+    return render_template("landing.html")
+
+@app.route("/dashboard")
+def dashboard():
     """Serve the main dashboard page."""
     return render_template("index.html")
 

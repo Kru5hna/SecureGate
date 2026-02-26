@@ -352,6 +352,25 @@ header {
   font-size: 14px;
 }
 
+.quick-action {
+  text-align: center;
+}
+.quick-action h3 {
+  font-size: 20px;
+  margin-bottom: 8px;
+}
+.quick-action p {
+  color: var(--text-muted);
+  margin-bottom: 24px;
+}
+
+.camera-zone {
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid var(--border-color);
+  padding: 16px;
+  border-radius: 12px;
+  margin-bottom: 20px;
+}
 #image-preview {
   max-width: 100%;
   max-height: 400px;
