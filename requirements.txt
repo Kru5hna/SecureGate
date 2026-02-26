@@ -1,0 +1,10 @@
+flask
+ultralytics
+easyocrwe 
+opencv-python-headless
+Pillow
+numpy
+pytesseract
+openai
+python-dotenv
+gunicorn
