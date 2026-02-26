@@ -1,0 +1,387 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vehicle Access Control</title>
+    <!-- Google Fonts -->
+    <link
+      href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="/static/css/style.css" />
+    <!-- FontAwesome -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+    />
+  </head>
+  <body>
+    <!-- Sidebar Navigation -->
+    <nav class="sidebar">
+      <div class="logo">
+        <i class="fa-solid fa-shield-halved"></i>
+        <h2>SecureGate</h2>
+      </div>
+      <ul class="nav-links">
+        <li class="active" data-tab="dashboard">
+          <i class="fa-solid fa-chart-pie"></i>
+          <span>Dashboard</span>
+        </li>
+        <li data-tab="scan">
+          <i class="fa-solid fa-camera"></i>
+          <span>Live Scan</span>
+        </li>
+        <li data-tab="database">
+          <i class="fa-solid fa-database"></i>
+          <span>Registered Vehicles</span>
+        </li>
+        <li data-tab="history">
+          <i class="fa-solid fa-clock-rotate-left"></i>
+          <span>Detection History</span>
+        </li>
+      </ul>
+      <div class="version">v1.0 - DL Project</div>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="content">
+      <!-- Top Header -->
+      <header>
+        <div class="header-title">
+          <h1 id="page-title">Dashboard Overview</h1>
+          <p>Monitor and control vehicle access</p>
+        </div>
+        <div class="header-profile">
+          <div class="status-indicator online"></div>
+          <span>System Active</span>
+        </div>
+      </header>
+
+      <!-- Toast Notification Container -->
+      <div id="toast-container"></div>
+
+      <!-- ======================= -->
+      <!-- TAB 1: DASHBOARD (Home) -->
+      <!-- ======================= -->
+      <section id="tab-dashboard" class="tab-content active">
+        <!-- Stats Row -->
+        <div class="stats-grid">
+          <div class="stat-card glass">
+            <div class="stat-icon blue"><i class="fa-solid fa-car"></i></div>
+            <div class="stat-details">
+              <h3 id="stat-total-scans">0</h3>
+              <p>Total Scans Today</p>
+            </div>
+          </div>
+          <div class="stat-card glass">
+            <div class="stat-icon green">
+              <i class="fa-solid fa-circle-check"></i>
+            </div>
+            <div class="stat-details">
+              <h3 id="stat-registered-hits">0</h3>
+              <p>Authorized Entries</p>
+            </div>
+          </div>
+          <div class="stat-card glass">
+            <div class="stat-icon red">
+              <i class="fa-solid fa-triangle-exclamation"></i>
+            </div>
+            <div class="stat-details">
+              <h3 id="stat-flagged">0</h3>
+              <p>Flagged Vehicles</p>
+            </div>
+          </div>
+          <div class="stat-card glass">
+            <div class="stat-icon orange">
+              <i class="fa-solid fa-address-card"></i>
+            </div>
+            <div class="stat-details">
+              <h3 id="stat-db-size">0</h3>
+              <p>Registered Database</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Split Layout -->
+        <div class="dashboard-split">
+          <!-- Recent Flags -->
+          <div class="dash-panel glass span-2">
+            <div class="panel-header">
+              <h3><i class="fa-solid fa-bell"></i> Recent Security Alerts</h3>
+            </div>
+            <div class="panel-body">
+              <table class="data-table">
+                <thead>
+                  <tr>
+                    <th>License Plate</th>
+                    <th>Timestamp</th>
+                    <th>Status</th>
+                  </tr>
+                </thead>
+                <tbody id="recent-flags-tbody">
+                  <!-- Populated via JS -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Quick Action -->
+          <div class="dash-panel glass flex-center">
+            <div class="quick-action">
+              <h3>Need to check a vehicle?</h3>
+              <p>Upload an image to scan it immediately.</p>
+              <button class="btn btn-primary" onclick="swtichTab('scan')">
+                <i class="fa-solid fa-camera"></i> Scan Now
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= -->
+      <!-- TAB 2: LIVE SCAN        -->
+      <!-- ======================= -->
+      <section id="tab-scan" class="tab-content">
+        <div class="scan-container">
+          <!-- Upload Area -->
+          <div class="upload-panel glass">
+            <div class="flex-between" style="margin-bottom: 24px">
+              <div>
+                <h2>Vehicle Scanner</h2>
+                <p>Use camera or upload a saved image</p>
+              </div>
+              <div style="display: flex; gap: 8px">
+                <button class="btn btn-primary" id="btn-mode-camera">
+                  <i class="fa-solid fa-video"></i> Camera
+                </button>
+                <button class="btn btn-secondary" id="btn-mode-upload">
+                  <i class="fa-solid fa-upload"></i> Upload
+                </button>
+              </div>
+            </div>
+
+            <!-- WebCam Zone -->
+            <div class="camera-zone" id="camera-zone">
+              <div
+                style="
+                  position: relative;
+                  width: 100%;
+                  border-radius: 12px;
+                  overflow: hidden;
+                  background: #000;
+                  margin-bottom: 20px;
+                "
+              >
+                <video
+                  id="camera-video"
+                  autoplay
+                  playsinline
+                  style="
+                    width: 100%;
+                    max-height: 400px;
+                    display: block;
+                    object-fit: cover;
+                  "
+                ></video>
+                <canvas id="camera-canvas" style="display: none"></canvas>
+              </div>
+              <div class="preview-actions">
+                <button
+                  class="btn btn-primary"
+                  id="btn-capture-scan"
+                  style="
+                    width: 100%;
+                    justify-content: center;
+                    padding: 12px;
+                    font-size: 16px;
+                  "
+                >
+                  <i class="fa-solid fa-camera"></i> Capture & Scan
+                </button>
+              </div>
+            </div>
+
+            <!-- Upload Zone -->
+            <div class="drop-zone" id="drop-zone" style="display: none">
+              <i class="fa-solid fa-cloud-arrow-up drop-icon"></i>
+              <h3>Drag & Drop image here</h3>
+              <p>or</p>
+              <input type="file" id="file-input" accept="image/*" hidden />
+              <button
+                class="btn btn-outline"
+                onclick="document.getElementById('file-input').click()"
+              >
+                Browse Files
+              </button>
+            </div>
+
+            <!-- Shared Preview -->
+            <div
+              class="image-preview-container"
+              id="preview-container"
+              style="display: none"
+            >
+              <img id="image-preview" src="" alt="Preview" />
+              <div class="preview-actions">
+                <button class="btn btn-secondary" id="btn-cancel-scan">
+                  Discard
+                </button>
+                <button class="btn btn-primary" id="btn-process-scan">
+                  Scan Vehicle <i class="fa-solid fa-wand-magic-sparkles"></i>
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Results Area -->
+          <div
+            class="results-panel glass"
+            id="results-panel"
+            style="display: none"
+          >
+            <div class="panel-header results-header">
+              <h2>Detection Results</h2>
+              <div
+                id="loading-spinner"
+                class="spinner"
+                style="display: none"
+              ></div>
+            </div>
+
+            <div id="scan-results-content">
+              <!-- Populated by JS -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= -->
+      <!-- TAB 3: REGISTERED DB    -->
+      <!-- ======================= -->
+      <section id="tab-database" class="tab-content">
+        <div class="dash-panel glass">
+          <div class="panel-header flex-between">
+            <h2>Authorized Vehicles Directory</h2>
+            <button class="btn btn-primary" id="btn-add-vehicle">
+              <i class="fa-solid fa-plus"></i> Add Vehicle
+            </button>
+          </div>
+
+          <div class="search-bar">
+            <i class="fa-solid fa-magnifying-glass"></i>
+            <input
+              type="text"
+              id="db-search"
+              placeholder="Search by plate number or owner name..."
+            />
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Plate Number</th>
+                  <th>Owner Name</th>
+                  <th>Vehicle Type</th>
+                  <th>Added On</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="db-tbody">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- ======================= -->
+      <!-- TAB 4: HISTORY          -->
+      <!-- ======================= -->
+      <section id="tab-history" class="tab-content">
+        <div class="dash-panel glass">
+          <div class="panel-header">
+            <h2>System Detection Logs</h2>
+          </div>
+
+          <div class="table-responsive">
+            <table class="data-table">
+              <thead>
+                <tr>
+                  <th>Image Reference</th>
+                  <th>Detected Plate</th>
+                  <th>Confidence</th>
+                  <th>Timestamp</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="history-tbody">
+                <!-- Populated via JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <!-- Modal for Adding Vehicle -->
+    <div class="modal-backdrop" id="add-modal">
+      <div class="modal glass">
+        <div class="modal-header">
+          <h3>Add Authorized Vehicle</h3>
+          <button class="close-btn" id="close-modal">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+        <div class="modal-body">
+          <form id="add-vehicle-form">
+            <div class="input-group">
+              <label>License Plate Number</label>
+              <input
+                type="text"
+                id="in-plate"
+                placeholder="e.g. MH31AB1234"
+                required
+                pattern="[A-Za-z0-9\s-]+"
+              />
+            </div>
+            <div class="input-group">
+              <label>Owner Name</label>
+              <input
+                type="text"
+                id="in-owner"
+                placeholder="Full Name"
+                required
+              />
+            </div>
+            <div class="input-group">
+              <label>Vehicle Type</label>
+              <select id="in-type">
+                <option value="Car">Car</option>
+                <option value="Bike">Bike / Two-Wheeler</option>
+                <option value="Truck">Truck / Commercial</option>
+                <option value="Other">Other</option>
+              </select>
+            </div>
+            <div class="modal-footer">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                id="btn-modal-cancel"
+              >
+                Cancel
+              </button>
+              <button type="submit" class="btn btn-primary">
+                Save Vehicle
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+  </body>
+</html>
