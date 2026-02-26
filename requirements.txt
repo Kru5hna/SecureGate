@@ -4,3 +4,4 @@ easyocrwe
 opencv-python-headless
 Pillow
 numpy
+pytesseract

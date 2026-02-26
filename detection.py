@@ -8,6 +8,10 @@ import re
 import cv2
 import numpy as np
 from PIL import Image
+import pytesseract
+
+# Windows specific: Set tesseract path (Change this if installed elsewhere)
+pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 # ─── Lazy-loaded globals ───────────────────────────────────────────
 _yolo_model = None
@@ -136,6 +140,11 @@ def preprocess_plate_image(plate_img):
     )
     variants.append(adaptive)
 
+    # 6. Morphological Operations (Opening to remove noise, Closing to close small holes)
+    kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3, 3))
+    morph = cv2.morphologyEx(otsu, cv2.MORPH_CLOSE, kernel)
+    variants.append(morph)
+
     return variants
 
 
@@ -229,8 +238,21 @@ def detect_and_read(image_path):
                             ocr_texts.append((cleaned, ocr_conf))
                             
                 except Exception as e:
-                    print(f"[DETECTION] OCR error: {e}")
+                    print(f"[DETECTION] EasyOCR error: {e}")
                     pass
+
+            # ─── FALLBACK: Tesseract OCR ───
+            tesseract_config = r'--oem 3 --psm 8 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
+            for processed_img in processed_variants:
+                 try:
+                     text = pytesseract.image_to_string(processed_img, config=tesseract_config)
+                     cleaned = clean_plate_text(text)
+                     if len(cleaned) >= 4 and len(cleaned) <= 12:
+                         # We assign a baseline confidence of 0.6 for Tesseract matches
+                         ocr_texts.append((cleaned, 0.6))
+                 except Exception as e:
+                     # Silently fail if Tesseract is not installed
+                     pass
 
             # Pick the best OCR result (longest valid text with highest confidence)
             best_text = ""
