@@ -553,6 +553,11 @@ header {
 }
 
 @media (max-width: 768px) {
+  /* Fix body layout so nav stays on top */
+  body {
+    flex-direction: column;
+  }
+
   /* Sidebar handling */
   .sidebar {
     width: 100%;
