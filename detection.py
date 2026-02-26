@@ -6,6 +6,7 @@ Uses YOLO for plate detection and EasyOCR for text extraction.
 import os
 import re
 import cv2
+import sys
 import base64
 import numpy as np
 from PIL import Image
@@ -15,7 +16,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Windows specific: Set tesseract path (Change this if installed elsewhere)
-pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
+if sys.platform == 'win32':
+    pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
 
 # ─── Lazy-loaded globals ───────────────────────────────────────────
 _yolo_model = None

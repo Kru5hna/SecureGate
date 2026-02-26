@@ -7,3 +7,4 @@ numpy
 pytesseract
 openai
 python-dotenv
+gunicorn
