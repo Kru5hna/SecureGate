@@ -6,9 +6,13 @@ Uses YOLO for plate detection and EasyOCR for text extraction.
 import os
 import re
 import cv2
+import base64
 import numpy as np
 from PIL import Image
 import pytesseract
+from dotenv import load_dotenv
+
+load_dotenv()
 
 # Windows specific: Set tesseract path (Change this if installed elsewhere)
 pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tesseract.exe'
@@ -16,6 +20,26 @@ pytesseract.pytesseract.tesseract_cmd = r'C:\Program Files\Tesseract-OCR\tessera
 # ─── Lazy-loaded globals ───────────────────────────────────────────
 _yolo_model = None
 _ocr_reader = None
+_kimi_client = None
+
+def load_kimi():
+    """Initialize Moonshot Kimi Vision client if API key is present."""
+    global _kimi_client
+    if _kimi_client is None:
+        kimi_api_key = os.environ.get("KIMI_API_KEY")
+        if kimi_api_key:
+            try:
+                from openai import OpenAI
+                _kimi_client = OpenAI(
+                    api_key=kimi_api_key,
+                    base_url="https://api.moonshot.cn/v1",
+                )
+                print("[DETECTION] Kimi Vision API client initialized.")
+            except ImportError:
+                print("[DETECTION] OpenAI library not installed. Kimi disabled.")
+        else:
+            print("[DETECTION] KIMI_API_KEY not found in .env. Kimi disabled.")
+    return _kimi_client
 
 MODEL_PATH = os.path.join(os.path.dirname(os.path.abspath(__file__)), "best (1).pt")
 
@@ -205,54 +229,95 @@ def detect_and_read(image_path):
             # Preprocess the plate image into multiple variants
             processed_variants = preprocess_plate_image(plate_crop)
 
-            # Run OCR on multiple preprocessed versions and pick the best
+            # OCR collection pool
             ocr_texts = []
 
-            for processed_img in processed_variants:
+            # ─── ULTIMATE VISION: Moonshot Kimi 2.5 ───
+            kimi = load_kimi()
+            kimi_success = False
+            if kimi:
                 try:
-                    # Provide an "allowlist" to force EasyOCR to only read uppercase letters and numbers
-                    ocr_result = reader.readtext(
-                        processed_img, 
-                        detail=1,
-                        allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
-                        paragraph=False,
-                        mag_ratio=2.0  # Add internal magnification
+                    # Encode original crop to base64
+                    _, buffer = cv2.imencode('.jpg', plate_crop)
+                    encoded_string = base64.b64encode(buffer).decode('utf-8')
+                    
+                    response = kimi.chat.completions.create(
+                        model="moonshot-v1-8k-vision-preview",
+                        messages=[
+                            {
+                                "role": "user",
+                                "content": [
+                                    {"type": "text", "text": "Extract only the vehicle license plate number from this image. Output only the alphanumeric characters without any spaces, hyphens, or special characters. Do not add any explanation. Example: MH20EE0841"},
+                                    {
+                                        "type": "image_url",
+                                        "image_url": {
+                                            "url": f"data:image/jpeg;base64,{encoded_string}"
+                                        }
+                                    }
+                                ]
+                            }
+                        ],
+                        temperature=0.0
                     )
                     
-                    # Sometimes plate text is split into multiple bounding boxes by OCR
-                    # Example: ["MH20", "EE0841"]
-                    if len(ocr_result) > 1:
-                        # Combine multiple detections vertically/horizontally
-                        combined_text = "".join([det[1] for det in ocr_result])
-                        avg_conf = sum([det[2] for det in ocr_result]) / len(ocr_result)
-                        cleaned_combo = clean_plate_text(combined_text)
-                        if len(cleaned_combo) >= 4 and len(cleaned_combo) <= 12:
-                            ocr_texts.append((cleaned_combo, avg_conf))
-
-                    # Also consider individual boxes
-                    for detection in ocr_result:
-                        text = detection[1]
-                        ocr_conf = detection[2]
-                        cleaned = clean_plate_text(text)
-                        if len(cleaned) >= 4 and len(cleaned) <= 12:
-                            ocr_texts.append((cleaned, ocr_conf))
-                            
+                    raw_text = response.choices[0].message.content.strip()
+                    cleaned_kimi = clean_plate_text(raw_text)
+                    
+                    if len(cleaned_kimi) >= 4 and len(cleaned_kimi) <= 12:
+                        # Kimi gets highest confidence (0.99) since it's an LLM
+                        ocr_texts.append((cleaned_kimi, 0.99))
+                        kimi_success = True
+                        print(f"[DETECTION] Kimi Vision extracted: {cleaned_kimi}")
                 except Exception as e:
-                    print(f"[DETECTION] EasyOCR error: {e}")
-                    pass
+                    print(f"[DETECTION] Kimi Vision API error: {e}")
+
+            # ─── FALLBACK: Local OCR (EasyOCR & Tesseract) ───
+            if not kimi_success:
+                for processed_img in processed_variants:
+                    try:
+                        # Provide an "allowlist" to force EasyOCR to only read uppercase letters and numbers
+                        ocr_result = reader.readtext(
+                            processed_img, 
+                            detail=1,
+                            allowlist='ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789',
+                            paragraph=False,
+                            mag_ratio=2.0  # Add internal magnification
+                        )
+                        
+                        # Sometimes plate text is split into multiple bounding boxes by OCR
+                        # Example: ["MH20", "EE0841"]
+                        if len(ocr_result) > 1:
+                            # Combine multiple detections vertically/horizontally
+                            combined_text = "".join([det[1] for det in ocr_result])
+                            avg_conf = sum([det[2] for det in ocr_result]) / len(ocr_result)
+                            cleaned_combo = clean_plate_text(combined_text)
+                            if len(cleaned_combo) >= 4 and len(cleaned_combo) <= 12:
+                                ocr_texts.append((cleaned_combo, avg_conf))
+
+                        # Also consider individual boxes
+                        for detection in ocr_result:
+                            text = detection[1]
+                            ocr_conf = detection[2]
+                            cleaned = clean_plate_text(text)
+                            if len(cleaned) >= 4 and len(cleaned) <= 12:
+                                ocr_texts.append((cleaned, ocr_conf))
+                                
+                    except Exception as e:
+                        print(f"[DETECTION] EasyOCR error: {e}")
+                        pass
 
             # ─── FALLBACK: Tesseract OCR ───
             tesseract_config = r'--oem 3 --psm 8 -c tessedit_char_whitelist=ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789'
             for processed_img in processed_variants:
-                 try:
-                     text = pytesseract.image_to_string(processed_img, config=tesseract_config)
-                     cleaned = clean_plate_text(text)
-                     if len(cleaned) >= 4 and len(cleaned) <= 12:
-                         # We assign a baseline confidence of 0.6 for Tesseract matches
-                         ocr_texts.append((cleaned, 0.6))
-                 except Exception as e:
-                     # Silently fail if Tesseract is not installed
-                     pass
+                try:
+                    text = pytesseract.image_to_string(processed_img, config=tesseract_config)
+                    cleaned = clean_plate_text(text)
+                    if len(cleaned) >= 4 and len(cleaned) <= 12:
+                        # We assign a baseline confidence of 0.6 for Tesseract matches
+                        ocr_texts.append((cleaned, 0.6))
+                except Exception as e:
+                    # Silently fail if Tesseract is not installed
+                    pass
 
             # Pick the best OCR result (longest valid text with highest confidence)
             best_text = ""
