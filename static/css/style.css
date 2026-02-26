@@ -259,7 +259,8 @@ header {
   grid-template-columns: 2fr 1fr;
   gap: 20px;
 }
-.dash-panel {
+.dash-panel,
+.upload-panel {
   padding: 24px;
 }
 .panel-header {
