@@ -24,5 +24,5 @@ RUN mkdir -p static/uploads && chmod 777 static/uploads
 # Expose the standard port Hugging Face Spaces uses
 EXPOSE 7860
 
-# Start the application using Gunicorn (production server)
-CMD ["gunicorn", "-b", "0.0.0.0:7860", "app:app"]
+# Start the application using Gunicorn with a longer timeout (120s) for heavy ML models
+CMD ["gunicorn", "--timeout", "120", "-b", "0.0.0.0:7860", "app:app"]

@@ -12,6 +12,10 @@ import numpy as np
 from PIL import Image
 import pytesseract
 from dotenv import load_dotenv
+import torch
+
+# Limit PyTorch threads to prevent OOM / SIGKILL on limited-resource cloud deployments
+torch.set_num_threads(1)
 
 load_dotenv()
 
