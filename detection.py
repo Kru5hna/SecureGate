@@ -99,6 +99,7 @@ def clean_plate_text(text):
         "B": "8",
         "G": "6",
         "Z": "2",
+        "A": "4",
     }
 
     # Apply smart replacements — only in expected digit positions
