@@ -1,3 +1,31 @@
-indian vehicle license plate dataset
+# ─── Dataset (too large for Git) ───
+indian vehicle license plate dataset/
+
+# ─── Secrets ───
 .env
+
+# ─── Uploaded / processed images (runtime generated) ───
 static/uploads/
+
+# ─── Python bytecode ───
+__pycache__/
+*.py[cod]
+*$py.class
+
+# ─── Virtual environments ───
+venv/
+.venv/
+env/
+
+# ─── IDE / Editor ───
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ─── OS files ───
+.DS_Store
+Thumbs.db
+
+# ─── SQLite DB (runtime generated, seed data recreated automatically) ───
+# vehicles.db
