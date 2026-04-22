@@ -29,9 +29,9 @@
 |:---:|:---:|
 | ![Live Scan](output/live_scan.png) | ![Vehicles DB](output/registered_vehicles.png) |
 
-| Detection History | Scan Results |
+| Detection History | |
 |:---:|:---:|
-| ![History](output/detection_history.png) | ![Results](output/scan_results.png) |
+| ![History](output/detection_history.png) |
 
 > 💡 *Add your own screenshots to the `output/` folder and update the filenames above.*
 
