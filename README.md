@@ -1,7 +1,7 @@
 
 <div align="center">
 
-# 🛡️ SecureGate — Intelligent Vehicle Access Control
+# 🛡️ SecureGate - Intelligent Vehicle Access Control
 
 **Flagging Unregistered Vehicles Using License Plate Detection & Deep Learning**
 
