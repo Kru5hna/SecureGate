@@ -1,4 +1,13 @@
-
+---
+title: SecureGate
+emoji: 🔥
+colorFrom: gray
+colorTo: indigo
+sdk: docker
+pinned: false
+license: mit
+short_description: Flagging Unregistered Vehicle Using License Plate Detection
+---
 
 <div align="center">
 
