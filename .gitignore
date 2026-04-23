@@ -29,3 +29,5 @@ Thumbs.db
 
 # ─── SQLite DB (runtime generated, seed data recreated automatically) ───
 # vehicles.db
+
+test_kimi.py

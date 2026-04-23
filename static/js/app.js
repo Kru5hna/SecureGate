@@ -246,14 +246,43 @@ async function processImageScan(file) {
   const formData = new FormData();
   formData.append("image", file);
 
-  const spinner = document.getElementById("loading-spinner");
   const resultsPanel = document.getElementById("results-panel");
   const resultsContent = document.getElementById("scan-results-content");
 
   resultsPanel.style.display = "block";
-  spinner.style.display = "block";
-  resultsContent.innerHTML =
-    '<p class="text-center">Processing image with YOLO AI...</p>';
+  
+  // Loading steps to show the user what's happening in the backend
+  const loadingSteps = [
+    "Initializing YOLO detection...",
+    "Locating license plate in image...",
+    "Trying Kimi Vision API...",
+    "Kimi failed/skipped, preprocessing image...",
+    "Running EasyOCR extraction...",
+    "Running Tesseract OCR fallback...",
+    "Validating text format...",
+    "Cross-referencing authorized database..."
+  ];
+  
+  let stepIndex = 0;
+  resultsContent.innerHTML = `
+    <div class="loading-container">
+      <div id="loading-spinner-large" class="spinner" style="width: 40px; height: 40px; margin-bottom: 20px;"></div>
+      <p id="loading-text" class="animated-loading-text">${loadingSteps[0]}</p>
+    </div>
+  `;
+  
+  // Cycle text every 800ms
+  const loadingInterval = setInterval(() => {
+    stepIndex++;
+    if (stepIndex < loadingSteps.length) {
+      const textEl = document.getElementById("loading-text");
+      if (textEl) textEl.innerText = loadingSteps[stepIndex];
+    } else {
+      // Optional: stop changing after the last step, or loop. We'll stick at the last step.
+      const textEl = document.getElementById("loading-text");
+      if (textEl) textEl.innerText = "Finalizing results... this might take a moment if Kimi times out.";
+    }
+  }, 800);
 
   try {
     const response = await fetch("/api/detect", {
@@ -262,6 +291,7 @@ async function processImageScan(file) {
     });
 
     const data = await response.json();
+    clearInterval(loadingInterval); // Stop cycling text
 
     if (!response.ok) throw new Error(data.error || "Server error");
 
@@ -270,10 +300,9 @@ async function processImageScan(file) {
     // Refresh dashboard stats quietly in background
     fetchDashboardStats();
   } catch (err) {
+    clearInterval(loadingInterval);
     showToast(err.message, "error");
     resultsContent.innerHTML = `<p class="error-text">Failed: ${err.message}</p>`;
-  } finally {
-    spinner.style.display = "none";
   }
 }
 
