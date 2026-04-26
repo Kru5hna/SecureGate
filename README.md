@@ -1,4 +1,3 @@
-
 <div align="center">
 
 # 🛡️ SecureGate - Intelligent Vehicle Access Control
@@ -71,6 +70,7 @@
 | 📊 **Real-time Dashboard** | Live stats, security alerts, detection history |
 | 🇮🇳 **Indian Plate Format** | Smart validation for Indian license plate patterns (e.g., `MH31AB1234`) |
 | 🐳 **Docker Ready** | One-command deployment via Docker / Hugging Face Spaces |
+| 🍓 **Raspberry Pi Ready** | Includes setup guide and systemd service config for Edge deployment |
 | 📱 **Responsive UI** | Works on desktop, tablet, and mobile devices |
 
 ---
@@ -211,6 +211,67 @@ http://localhost:7860
 ```
 
 🎉 **That's it!** The landing page will load. Click **"Launch Dashboard"** to access the full system.
+
+---
+
+### 🍓 Raspberry Pi Deployment (Edge)
+
+> Tested on **Raspberry Pi 4 (4 GB RAM)** running **Raspberry Pi OS (64-bit, Bookworm)**.
+
+#### 1. System Dependencies
+
+```bash
+sudo apt update && sudo apt upgrade -y
+sudo apt install -y python3-pip python3-venv \
+    tesseract-ocr libgl1 libglib2.0-0 git
+```
+
+#### 2. Clone & Install
+
+```bash
+git clone https://github.com/Kru5hna/SecureGate.git
+cd SecureGate
+python3 -m venv venv
+source venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+```
+
+> **Note:** On RPi, `easyocr` and `torch` install may take 10–20 minutes. The system is configured to use CPU-only inference (`gpu=False`, `torch.set_num_threads(1)`).
+
+#### 3. Run
+
+```bash
+python app.py
+```
+
+The dashboard will be accessible at `http://<rpi-ip>:7860` from any device on the same network.
+
+#### 4. (Optional) Run as a Systemd Service
+
+Create `/etc/systemd/system/securegate.service`:
+
+```ini
+[Unit]
+Description=SecureGate Vehicle Detection
+After=network.target
+
+[Service]
+WorkingDirectory=/home/pi/SecureGate
+ExecStart=/home/pi/SecureGate/venv/bin/python app.py
+Restart=always
+User=pi
+
+[Install]
+WantedBy=multi-user.target
+```
+
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable securegate
+sudo systemctl start securegate
+sudo systemctl status securegate
+```
 
 ---
 
